@@ -1,6 +1,5 @@
 using DataAccess;
 using WebApi;
-using ZstdSharp.Unsafe;
 
 var builder = WebApplication.CreateBuilder(args);
 

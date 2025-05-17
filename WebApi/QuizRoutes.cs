@@ -1,4 +1,3 @@
-using System;
 using DataAccess;
 
 namespace WebApi;
