@@ -11,4 +11,5 @@ public class Question
     public int QuestionType { get; set; }
     public int Timer { get; set; }
     public DateTime CreatedAt { get; set; }
+    public IList<Answer>? Answers{ get; set;}
 }
