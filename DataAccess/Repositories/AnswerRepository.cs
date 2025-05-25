@@ -1,9 +1,9 @@
 using System;
 using Dapper;
 using MySql.Data.MySqlClient;
-using DataAccess.Models;
+using Infrastructure.Models;
 
-namespace DataAccess;
+namespace Infrastructure.repositories;
 
 public class AnswerRepository
 {

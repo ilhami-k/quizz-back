@@ -1,7 +1,7 @@
 using System;
 using System.Formats.Asn1;
 
-namespace DataAccess.Models;
+namespace Infrastructure.Models;
 
 public class Question
 {

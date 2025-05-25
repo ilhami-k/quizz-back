@@ -1,7 +1,7 @@
 using System;
 using System.Security.Policy;
 
-namespace DataAccess.Models;
+namespace Infrastructure.Models;
 
 public class Category
 {

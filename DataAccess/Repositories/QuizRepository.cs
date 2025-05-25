@@ -1,10 +1,10 @@
 using System;
-using DataAccess.Models;
+using Infrastructure.Models;
 using Dapper;
 using MySql.Data.MySqlClient;
 using System.Runtime.CompilerServices;
 
-namespace DataAccess;
+namespace Infrastructure.repositories;
 
 public class QuizRepository
 {

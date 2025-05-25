@@ -1,6 +1,5 @@
-using DataAccess;
-
-namespace WebApi;
+using Infrastructure.repositories;
+namespace Api.EndPoints;
 
 public static class QuizRoutes
 {

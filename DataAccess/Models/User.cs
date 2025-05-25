@@ -1,5 +1,5 @@
 using System;
-namespace DataAccess.Models;
+namespace Infrastructure.Models;
 
 public class User
 {

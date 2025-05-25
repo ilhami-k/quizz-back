@@ -1,7 +1,7 @@
 using System;
-using DataAccess;
+using Infrastructure.repositories;
 
-namespace WebApi;
+namespace Api.EndPoints;
 
 public static class CategoryRoutes
 {

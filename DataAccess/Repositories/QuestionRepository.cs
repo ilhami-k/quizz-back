@@ -1,10 +1,10 @@
 using System;
 using System.Runtime.CompilerServices;
-using DataAccess.Models;
+using Infrastructure.Models;
 using Dapper;
 using MySql.Data.MySqlClient;
 
-namespace DataAccess;
+namespace Infrastructure.repositories;
 
 public class QuestionRepository
 {
