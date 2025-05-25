@@ -1,5 +1,6 @@
-using DataAccess;
-using WebApi;
+using Api.EndPoints;
+using Infrastructure.repositories;
+using Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,9 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>(); // Custom global exception handler middleware
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
