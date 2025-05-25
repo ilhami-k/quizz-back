@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <Folder Include="Gateways\" />
-    <Folder Include="Repositories\Abstractions\" />
   </ItemGroup>
 
 </Project>
