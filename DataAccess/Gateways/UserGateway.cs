@@ -5,7 +5,7 @@ using Infrastructure.Models;
 
 namespace Infrastructure.Gateways;
 
-public class UserGateway
+public class UserGateway : IUserGateway
 {
     private readonly IUserRepository _userRepository;
 
@@ -15,13 +15,26 @@ public class UserGateway
             ?? throw new ArgumentNullException(nameof(userRepository));
     }
 
-    public void AddUser(User user)
+    public void AddUser(Core.Models.User user, string passwordHash)
     {
         if (user == null)
         {
             throw new ArgumentNullException(nameof(user));
         }
-        _userRepository.AddUser(user);
+        if (string.IsNullOrWhiteSpace(passwordHash))
+        {
+            throw new ArgumentNullException(nameof(passwordHash), "Password hash cannot be null or empty.");
+        }
+
+        var Newuser = new User
+        {
+            UserId = user.UserId, 
+            Username = user.Username,
+            Email = user.Email,
+            Password = passwordHash 
+        };
+
+        _userRepository.AddUser(Newuser);
     }
     public void DeleteUser(int userId)
     {
@@ -30,6 +43,12 @@ public class UserGateway
             throw new ArgumentOutOfRangeException(nameof(userId), "User ID must be greater than zero.");
         }
         _userRepository.DeleteUser(userId);
+    }
+
+    public string? GetUserPasswordHash(int userId)
+    {
+        var user = _userRepository.GetUserById(userId);
+        return user?.Password;
     }
     public IEnumerable<Core.Models.User> GetAllUsers()
     {
@@ -46,7 +65,8 @@ public class UserGateway
     public Core.Models.User? GetUserById(int userId)
     {
         var user = _userRepository.GetUserById(userId);
-        return user == null ? null : new Core.Models.User
+        if (user == null) return null;
+        return new Core.Models.User
         {
             UserId = user.UserId,
             Username = user.Username,
@@ -58,7 +78,8 @@ public class UserGateway
     public Core.Models.User? GetUserByUsername(string username)
     {
         var user = _userRepository.GetUserByUsername(username);
-        return user == null ? null : new Core.Models.User
+        if (user == null) return null;
+        return new Core.Models.User
         {
             UserId = user.UserId,
             Username = user.Username,
