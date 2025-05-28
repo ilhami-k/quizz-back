@@ -33,6 +33,16 @@ public class UserRepository(IConfiguration configuration) : IUserRepository
         , new {UserId = userId});
     }
 
+    public User? GetUserByUsername(string username)
+    {
+        using var connection = CreateConnection();
+        return connection.QuerySingleOrDefault<User>(
+            @"SELECT ID_user AS UserId, username AS Name, email, password_hash AS Password, photo_url AS PhotoURL, is_admin AS IsAdmin, created_date AS CreatedAt, created_quizz AS CreatedQuizzes, taken_quizz AS ParticipatedQuizzes 
+            FROM user
+            WHERE username = @Username"
+        , new {Username = username});
+    }
+
     public void AddUser(User user)
     {
         using var connection = CreateConnection();

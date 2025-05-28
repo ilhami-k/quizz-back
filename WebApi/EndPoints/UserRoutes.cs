@@ -18,5 +18,10 @@ public static class UserRoutes
             return repo.GetUserById(id);
         })
         .WithName("GetUserById");
+
+        app.MapGet("/users/username/{username}", (string username, UserRepository repo) =>
+        {
+            return repo.GetUserByUsername(username);
+        });
     }
 }
