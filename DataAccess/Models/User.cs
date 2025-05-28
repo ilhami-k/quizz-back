@@ -8,7 +8,7 @@ public class User
     public string Email {get; set;} = string.Empty;
     public string Password {get;set;} = string.Empty;
     public string PhotoURL{get;set;} = string.Empty;
-    public int IsAdmin {get;set;}
+    public bool IsAdmin {get;set;}
     public DateTime CreatedAt{get;set;}
     public int CreatedQuizzes { get; set; }
     public int ParticipatedQuizzes { get; set; }

@@ -14,7 +14,6 @@ public class UserGateway : IUserGateway
         _userRepository = userRepository
             ?? throw new ArgumentNullException(nameof(userRepository));
     }
-
     public void AddUser(Core.Models.User user, string passwordHash)
     {
         if (user == null)
@@ -28,9 +27,10 @@ public class UserGateway : IUserGateway
 
         var Newuser = new User
         {
-            UserId = user.UserId, 
+            UserId = user.UserId,
             Username = user.Username,
             Email = user.Email,
+            IsAdmin = user.IsAdmin,
             Password = passwordHash 
         };
 
