@@ -11,5 +11,5 @@ public interface IUserGateway
     void AddUser(User user, string passwordHash);
     IEnumerable<User> GetAllUsers();
     void DeleteUser(int userId);
-    string? GetUserPasswordHash(int userId);
+    string? GetUserPasswordHash(string username);
 }

@@ -45,9 +45,9 @@ public class UserGateway : IUserGateway
         _userRepository.DeleteUser(userId);
     }
 
-    public string? GetUserPasswordHash(int userId)
+    public string? GetUserPasswordHash(string username)
     {
-        var user = _userRepository.GetUserById(userId);
+        var user = _userRepository.GetUserByUsername(username);
         return user?.Password;
     }
     public IEnumerable<Core.Models.User> GetAllUsers()
