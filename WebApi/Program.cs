@@ -13,6 +13,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddTransient<UserRepository>(); 
 builder.Services.AddTransient<IQuizRepository, QuizRepository>(); 
 builder.Services.AddTransient<CategoryRepository>();
+builder.Services.AddTransient<IQuestionRepository, QuestionRepository>(); // <-- Add this line
 
 // Add CORS services
 builder.Services.AddCors(options =>
@@ -42,5 +43,6 @@ app.UseCors(MyAllowSpecificOrigins);
 app.AddUserRoutes();
 app.AddQuizRoutes();
 app.AddCategoryRoutes();
+app.AddQuestionRoutes(); // <-- Add this line
 
 app.Run();
