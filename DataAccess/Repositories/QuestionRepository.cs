@@ -4,17 +4,16 @@ using System.Data;
 using System.Linq;
 using Dapper;
 using Infrastructure.Models;
-using Infrastructure.Repositories.Abstractions; // Make sure this using directive is present
-using Microsoft.Extensions.Configuration; // For IConfiguration
+using Infrastructure.Repositories.Abstractions;
+using Microsoft.Extensions.Configuration; 
 using MySql.Data.MySqlClient;
 
 namespace Infrastructure.repositories
 {
-    public class QuestionRepository : IQuestionRepository // Implement the interface
+    public class QuestionRepository : IQuestionRepository 
     {
         private readonly string _connectionString;
 
-        // Updated constructor to use IConfiguration for the connection string
         public QuestionRepository(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection")
@@ -69,7 +68,6 @@ namespace Infrastructure.repositories
             return question;
         }
 
-        // Internal method to get answers for a question, can reuse existing connection
         private IEnumerable<Answer> GetAnswersByQuestionIdInternal(int questionId, IDbConnection connection)
         {
             var sql = @"SELECT ID_answer AS AnswerId, answer_text AS AnswerText, is_correct AS CorrectAnswer, created_at AS CreatedAt 
@@ -79,7 +77,6 @@ namespace Infrastructure.repositories
             return connection.Query<Answer>(sql, new { QuestionId = questionId });
         }
         
-        // Original GetAnswersByQuestionId if needed separately, or can be removed if internal one is sufficient
         public List<Answer> GetAnswersByQuestionId(int questionId)
         {
             using var connection = CreateConnection();
@@ -89,18 +86,15 @@ namespace Infrastructure.repositories
         public Question AddQuestion(Question question)
         {
             using var connection = CreateConnection();
-            connection.Open(); // Explicitly open connection for transaction management
-            using var transaction = connection.BeginTransaction(); // Start a transaction
+            connection.Open(); 
+            using var transaction = connection.BeginTransaction(); 
 
             try
             {
-                // 1. Insert the Question
                 var questionSql = @"
                     INSERT INTO question (quizz_ID_quizz, question_text, question_type, timer_seconds, created_at) 
                     VALUES (@QuizId, @QuestionText, @QuestionType, @Timer, @CreatedAt);
-                    SELECT LAST_INSERT_ID();"; // Get the ID of the newly inserted question
-
-                // Parameters for the question insert
+                    SELECT LAST_INSERT_ID();";
                 var questionParams = new
                 {
                     question.QuizId,
@@ -111,14 +105,12 @@ namespace Infrastructure.repositories
                 };
                 
                 int newQuestionId = connection.ExecuteScalar<int>(questionSql, questionParams, transaction);
-                question.QuestionId = newQuestionId; // Set the generated ID back to the model
+                question.QuestionId = newQuestionId; 
 
-                // 2. Insert Answers and link them in question_has_answer
                 if (question.Answers != null && question.Answers.Any())
                 {
                     foreach (var answer in question.Answers)
                     {
-                        // Insert Answer
                         var answerSql = @"
                             INSERT INTO answer (answer_text, is_correct, created_at) 
                             VALUES (@AnswerText, @CorrectAnswer, @CreatedAt);
@@ -127,7 +119,6 @@ namespace Infrastructure.repositories
                         int newAnswerId = connection.ExecuteScalar<int>(answerSql, new { answer.AnswerText, answer.CorrectAnswer, answer.CreatedAt }, transaction);
                         answer.AnswerId = newAnswerId;
 
-                        // Link Question and Answer in question_has_answer
                         var linkSql = @"
                             INSERT INTO question_has_answer (question_ID_question, answer_ID_answer) 
                             VALUES (@QuestionId, @AnswerId);";
@@ -135,14 +126,13 @@ namespace Infrastructure.repositories
                     }
                 }
 
-                transaction.Commit(); // If everything is successful, commit the transaction
+                transaction.Commit(); 
                 return question;
             }
             catch (Exception)
             {
-                transaction.Rollback(); // If any error occurs, rollback the transaction
-                // Log the exception (ex) here if you have a logging mechanism
-                throw; // Re-throw the exception to indicate failure
+                transaction.Rollback(); 
+                throw; 
             }
         }
     }
