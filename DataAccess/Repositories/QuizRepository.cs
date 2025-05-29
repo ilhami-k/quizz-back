@@ -4,7 +4,7 @@ using Dapper;
 using MySql.Data.MySqlClient;
 using System.Runtime.CompilerServices;
 
-namespace Infrastructure.repositories;
+namespace Infrastructure.Repositories;
 
 public class QuizRepository
 {

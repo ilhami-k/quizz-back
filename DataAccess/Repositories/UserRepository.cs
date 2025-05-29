@@ -6,7 +6,7 @@ using MySql.Data.MySqlClient;
 using Infrastructure.Repositories.Abstractions;
 
 
-namespace Infrastructure.repositories;
+namespace Infrastructure.Repositories;
 
 public class UserRepository(IConfiguration configuration) : IUserRepository
 {

@@ -1,5 +1,5 @@
 using Api.EndPoints;
-using Infrastructure.repositories;
+using Infrastructure.Repositories;
 using Api.Middleware;
 using Scalar;
 using Scalar.AspNetCore;
@@ -22,7 +22,8 @@ builder.Services.AddTransient<CategoryRepository>(); //
 builder.Services.AddTransient<IUserGateway, UserGateway>();
 builder.Services.AddTransient<IUserUseCases, UserUseCases>();
 
-// Add CORS services
+// Add CORS services 
+// ATTENTION Il faut changer car la tout le monde peut acceder a l'API
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,

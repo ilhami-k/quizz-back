@@ -4,7 +4,7 @@ using Infrastructure.Models;
 using Dapper;
 using MySql.Data.MySqlClient;
 
-namespace Infrastructure.repositories;
+namespace Infrastructure.Repositories;
 
 public class QuestionRepository
 {
