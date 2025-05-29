@@ -13,7 +13,7 @@ public class UserUseCases : IUserUseCases
         _userGateway = userGateway ?? throw new ArgumentNullException(nameof(userGateway));
     }
 
-    public User AuthentificateAndGetUser(AuthentificationRequest request)
+    public User AuthenticateAndGetUser(AuthenticationRequest request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
         {
