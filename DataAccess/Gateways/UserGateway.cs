@@ -25,16 +25,15 @@ public class UserGateway : IUserGateway
             throw new ArgumentNullException(nameof(passwordHash), "Password hash cannot be null or empty.");
         }
 
-        var Newuser = new User
+        var newInfraUser = new User
         {
-            UserId = user.UserId,
             Username = user.Username,
             Email = user.Email,
             IsAdmin = user.IsAdmin,
             Password = passwordHash 
         };
 
-        _userRepository.AddUser(Newuser);
+        _userRepository.AddUser(newInfraUser);
     }
     public void DeleteUser(int userId)
     {

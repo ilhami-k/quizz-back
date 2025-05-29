@@ -48,7 +48,7 @@ public class UserRepository(IConfiguration configuration) : IUserRepository
         using var connection = CreateConnection();
 
         var sql = @"INSERT INTO user (username, email, password_hash, photo_url, is_admin, created_date, created_quizz, taken_quizz) 
-        VALUE (@Name, @Email, @Password, @PhotoURL, @IsAdmin, @CreatedAt, @CreatedQuizzes, @ParticipatedQuizzes)";
+        VALUE (@Username, @Email, @Password, @PhotoURL, @IsAdmin, @CreatedAt, @CreatedQuizzes, @ParticipatedQuizzes)";
 
         connection.Execute(sql, user);
     }

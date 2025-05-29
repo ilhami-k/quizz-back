@@ -1,6 +1,13 @@
 using Api.EndPoints;
 using Infrastructure.repositories;
 using Api.Middleware;
+using Scalar;
+using Scalar.AspNetCore;
+using Core.IGateway;
+using Infrastructure.Gateways;
+using Core.UseCases.Abstractions;
+using Core.UseCases;
+using Infrastructure.Repositories.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,9 +16,11 @@ var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 // Add services to the container.
 builder.Services.AddOpenApi(); //
-builder.Services.AddTransient<UserRepository>(); //
+builder.Services.AddTransient<IUserRepository, UserRepository>(); //
 builder.Services.AddTransient<QuizRepository>(); //
 builder.Services.AddTransient<CategoryRepository>(); //
+builder.Services.AddTransient<IUserGateway, UserGateway>();
+builder.Services.AddTransient<IUserUseCases, UserUseCases>();
 
 // Add CORS services
 builder.Services.AddCors(options =>
@@ -34,6 +43,7 @@ app.UseMiddleware<GlobalExceptionHandlerMiddleware>(); // Custom global exceptio
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi(); //
+    app.MapScalarApiReference();
 }
 
 app.UseHttpsRedirection(); //
