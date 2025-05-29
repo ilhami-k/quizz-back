@@ -1,4 +1,4 @@
-using Infrastructure.repositories;
+using Infrastructure.Repositories;
 namespace Api.EndPoints;
 
 public static class QuizRoutes

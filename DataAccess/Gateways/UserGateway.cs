@@ -30,7 +30,7 @@ public class UserGateway : IUserGateway
             Username = user.Username,
             Email = user.Email,
             IsAdmin = user.IsAdmin,
-            Password = passwordHash 
+            PasswordHash = passwordHash 
         };
 
         _userRepository.AddUser(newInfraUser);
@@ -47,7 +47,7 @@ public class UserGateway : IUserGateway
     public string? GetUserPasswordHash(string username)
     {
         var user = _userRepository.GetUserByUsername(username);
-        return user?.Password;
+        return user?.PasswordHash;
     }
     public IEnumerable<Core.Models.User> GetAllUsers()
     {
