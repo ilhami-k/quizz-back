@@ -35,5 +35,16 @@ public static class UserRoutes
             return Results.Created();
         })
         .WithName("Register");
+
+        // Ajouter le Jwt token pour la sécurité !
+        app.MapPost("/users/auth", ([FromBody] AuthenticationRequest request, IUserUseCases useCases) =>
+        {
+            var user = useCases.AuthenticateAndGetUser(request);
+            if (user == null)
+            {
+                return Results.Unauthorized();
+            }
+            return Results.Ok(user);
+        });
     }
 }
