@@ -40,10 +40,6 @@ public static class UserRoutes
         app.MapPost("/users/auth", ([FromBody] AuthenticationRequest request, IUserUseCases useCases) =>
         {
             var user = useCases.AuthenticateAndGetUser(request);
-            if (user == null)
-            {
-                return Results.Unauthorized();
-            }
             return Results.Ok(user);
         });
     }
