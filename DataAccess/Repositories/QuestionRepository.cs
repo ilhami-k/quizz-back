@@ -8,7 +8,8 @@ using Infrastructure.Repositories.Abstractions;
 using Microsoft.Extensions.Configuration; 
 using MySql.Data.MySqlClient;
 
-namespace Infrastructure.repositories
+namespace Infrastructure.Repositories
+
 {
     public class QuestionRepository : IQuestionRepository 
     {

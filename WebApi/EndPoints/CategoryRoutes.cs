@@ -1,5 +1,5 @@
 using System;
-using Infrastructure.repositories;
+using Infrastructure.Repositories;
 
 namespace Api.EndPoints;
 
