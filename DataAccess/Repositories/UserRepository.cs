@@ -53,12 +53,13 @@ public class UserRepository(IConfiguration configuration) : IUserRepository
         connection.Execute(sql, user);
     }
 
+    // FAIRE UN DELETE ON CASCADE pour supp le user du quizz etc etc sinon on ne sait pas delete !
     public void DeleteUser(int userId)
     {
         using var connection = CreateConnection();
 
         var sql = "DELETE FROM user WHERE ID_user = @UserId";
 
-        connection.Execute(sql, new {UserId = userId});
+        connection.Execute(sql, new { UserId = userId });
     }
 }

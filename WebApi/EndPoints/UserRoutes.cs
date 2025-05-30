@@ -80,6 +80,20 @@ public static class UserRoutes
             {
                 return Results.Unauthorized();
             }
-        });
+        })
+        .WithName("Authentication");
+
+        app.MapDelete("/users/delete/{id}", (int id, IUserRepository repo) =>
+        {
+            var user = repo.GetUserById(id);
+            if (user == null)
+            {
+                return Results.NotFound($"User with ID {id} not found.");
+            }
+
+            repo.DeleteUser(id);
+            return Results.NoContent();
+        })
+        .WithName("DeleteUser");
     }
 }
