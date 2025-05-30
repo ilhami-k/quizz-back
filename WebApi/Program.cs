@@ -1,5 +1,6 @@
 using Api.EndPoints;
 using Infrastructure.Repositories;
+using Infrastructure.Repositories.Abstractions; 
 using Api.Middleware;
 using Scalar;
 using Scalar.AspNetCore;
@@ -7,29 +8,31 @@ using Core.IGateway;
 using Infrastructure.Gateways;
 using Core.UseCases.Abstractions;
 using Core.UseCases;
-using Infrastructure.Repositories.Abstractions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Define a CORS policy name
-var  MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 
 // Add services to the container.
-builder.Services.AddOpenApi(); //
+
+builder.Services.AddOpenApi();
 builder.Services.AddTransient<IUserRepository, UserRepository>(); //
-builder.Services.AddTransient<QuizRepository>(); //
-builder.Services.AddTransient<CategoryRepository>(); //
+builder.Services.AddTransient<IQuizRepository, QuizRepository>(); 
+builder.Services.AddTransient<CategoryRepository>();
+builder.Services.AddTransient<IQuestionRepository, QuestionRepository>(); 
 builder.Services.AddTransient<IUserGateway, UserGateway>();
 builder.Services.AddTransient<IUserUseCases, UserUseCases>();
+
 
 // Add CORS services 
 // ATTENTION Il faut changer car la tout le monde peut acceder a l'API
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
-                      policy  =>
+                      policy =>
                       {
-                          policy.AllowAnyOrigin() // Replace with your Angular app's origin if different
+                          policy.AllowAnyOrigin()
                                 .AllowAnyHeader()
                                 .AllowAnyMethod();
                       });
@@ -38,24 +41,22 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-app.UseMiddleware<GlobalExceptionHandlerMiddleware>(); // Custom global exception handler middleware
+app.UseMiddleware<GlobalExceptionHandlerMiddleware>();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+
     app.MapOpenApi(); //
     app.MapScalarApiReference();
+
 }
 
-app.UseHttpsRedirection(); //
-
-// Use the CORS policy
-// This should be placed after UseRouting (which is implicitly added in minimal APIs)
-// and before UseAuthorization (if you have it) and before mapping your controllers/routes.
+app.UseHttpsRedirection();
 app.UseCors(MyAllowSpecificOrigins);
 
-app.AddUserRoutes(); //
-app.AddQuizRoutes(); //
-app.AddCategoryRoutes(); //
+app.AddUserRoutes();
+app.AddQuizRoutes();
+app.AddCategoryRoutes();
+app.AddQuestionRoutes(); 
 
-app.Run(); //
+app.Run();
