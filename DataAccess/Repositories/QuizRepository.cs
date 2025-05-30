@@ -9,8 +9,8 @@ using Microsoft.Extensions.Configuration;
 using MySql.Data.MySqlClient;
 using System.Runtime.CompilerServices;
 
-namespace Infrastructure.Repositories;
 
+namespace Infrastructure.Repositories
 {
     public class QuizRepository : IQuizRepository
     {
