@@ -74,7 +74,7 @@ public static class UserRoutes
                 var token = tokenHandler.CreateToken(tokenDescriptor);
                 var jwtToken = tokenHandler.WriteToken(token);
 
-                return Results.Ok(new { token = jwtToken, user });
+                return Results.Ok(new { authToken = jwtToken, user });
             }
             else
             {
