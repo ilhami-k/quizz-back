@@ -7,4 +7,8 @@ public interface IUserRepository
     User? GetUserById(int userId);
     void AddUser(User user);
     IEnumerable<User> GetAllUsers();
+
+    void UpdateUser(User user);
+
+
 }
