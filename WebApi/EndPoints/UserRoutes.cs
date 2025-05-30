@@ -1,9 +1,11 @@
-using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using Infrastructure.Repositories.Abstractions;
 using Microsoft.AspNetCore.Mvc;
 using Core.Models;
 using Core.UseCases.Abstractions;
-using MySqlX.XDevAPI.Common;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Api.EndPoints;
 
@@ -37,10 +39,47 @@ public static class UserRoutes
         .WithName("Register");
 
         // Ajouter le Jwt token pour la sécurité !
-        app.MapPost("/users/auth", ([FromBody] AuthenticationRequest request, IUserUseCases useCases) =>
+        app.MapPost("/users/auth", ([FromBody] AuthenticationRequest request, IUserUseCases useCases, IConfiguration configuration) =>
         {
             var user = useCases.AuthenticateAndGetUser(request);
-            return Results.Ok(user);
+            if (user != null)
+            {
+                var issuer = configuration["Jwt:Issuer"];
+                var audience = configuration["Jwt:Audience"];
+                var key = Encoding.ASCII.GetBytes(configuration["Jwt:Key"]!);
+                var expireTime = configuration["Jwt:ExpireTimeInMinutes"];
+                var expiration = DateTime.UtcNow.AddMinutes(Convert.ToDouble(expireTime ?? "5"));
+
+                var claims = new List<Claim>
+                {
+                    new Claim(JwtRegisteredClaimNames.Name, user.Username),
+                    new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                };
+
+                if (user.IsAdmin)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, "Admin"));
+                }
+
+                var tokenDescriptor = new SecurityTokenDescriptor
+                {
+                    Subject = new ClaimsIdentity(claims),
+                    Expires = expiration,
+                    Issuer = issuer,
+                    Audience = audience,
+                    SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature)
+                };
+
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var token = tokenHandler.CreateToken(tokenDescriptor);
+                var jwtToken = tokenHandler.WriteToken(token);
+
+                return Results.Ok(new { token = jwtToken, user });
+            }
+            else
+            {
+                return Results.Unauthorized();
+            }
         });
     }
 }
