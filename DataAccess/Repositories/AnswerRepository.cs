@@ -3,7 +3,7 @@ using Dapper;
 using MySql.Data.MySqlClient;
 using Infrastructure.Models;
 
-namespace Infrastructure.repositories;
+namespace Infrastructure.Repositories;
 
 public class AnswerRepository
 {

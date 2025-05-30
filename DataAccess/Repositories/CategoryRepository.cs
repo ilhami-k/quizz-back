@@ -4,7 +4,7 @@ using Dapper;
 using MySql.Data.MySqlClient;
 using Org.BouncyCastle.Tls;
 
-namespace Infrastructure.repositories;
+namespace Infrastructure.Repositories;
 
 public class CategoryRepository
 {
