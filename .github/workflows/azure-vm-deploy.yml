@@ -5,9 +5,9 @@ on:
     branches:
       - main
     paths: # Updated to reflect actual directory names
-      - 'Api/**'
+      - 'WebApi/**' # Changed back from Api/**
       - 'Core/**'
-      - 'Infrastructure/**'
+      - 'Infrastructure/**' # Kept as Infrastructure from previous input
       - '.github/workflows/**'
 
 env:
@@ -15,7 +15,7 @@ env:
 
   # ---- IMPORTANT: Adjust these paths if your repository structure is different ----
   # SOLUTION_FILE_PATH: 'quizz-back.sln'  # Commented out as no .sln file is used
-  PROJECT_PATH: 'Api/Api.csproj'     # UPDATED: Path to your main WebApi project. Assumes Api.csproj inside Api/ folder. Please verify the .csproj filename.
+  PROJECT_PATH: 'WebApi/Api.csproj'     # UPDATED: Path to your main WebApi project.
   # ----------------------------------------------------------------------------
 
   PUBLISH_OUTPUT_DIR_NAME: 'app-publish'   # A temporary directory name for the published output on the runner
@@ -40,6 +40,17 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
         # For .NET 9 preview, if issues arise with SDK resolution, you might need:
         # include-prerelease: true
+        
+    - name: List files in workspace # Added for debugging if issues persist
+      run: |
+        pwd
+        echo "Listing files in root:"
+        ls -la
+        echo "Listing files in WebApi (if it exists):"
+        ls -la WebApi || echo "WebApi folder not found at root"
+        echo "Listing files in Api (if it exists):"
+        ls -la Api || echo "Api folder not found at root"
+
 
     - name: Restore dependencies
       # Restore the main project and its dependencies directly:
@@ -114,16 +125,6 @@ jobs:
           echo "Removing temporary artifact from VM..."
           sudo rm /tmp/${{ env.ARTIFACT_NAME }}.tar.gz
           
-          # Optional: Set correct ownership and permissions if your service runs as a non-root user (e.g., www-data)
-          # echo "Setting permissions..."
-          # sudo chown -R www-data:www-data ${{ env.VM_DEPLOY_PATH }} # Change www-data to your service user if different
-          # sudo chmod -R 755 ${{ env.VM_DEPLOY_PATH }}
-
-          # Ensure appsettings.json is present. 
-          # If you need to transform it (e.g., for production connection strings not stored in repo),
-          # you'd do it here or have a separate appsettings.Production.json deployed.
-          # For a showcase, your appsettings.json in the repo might be sufficient if it points to localhost MySQL on the VM.
-          
           echo "Starting application service: ${{ env.SERVICE_NAME }}"
           sudo systemctl start ${{ env.SERVICE_NAME }}
           
@@ -133,7 +134,6 @@ jobs:
           echo "Checking status of service: ${{ env.SERVICE_NAME }}"
           sudo systemctl status ${{ env.SERVICE_NAME }} --no-pager
           
-          # Final check to ensure the service is active, otherwise fail the job
           sudo systemctl is-active --quiet ${{ env.SERVICE_NAME }} || (echo "Service ${{ env.SERVICE_NAME }} is not active!" && exit 1)
           
           echo "--- Deployment to VM completed successfully! ---"
