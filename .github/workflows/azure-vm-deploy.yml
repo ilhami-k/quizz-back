@@ -3,26 +3,24 @@ name: Deploy QuizzApp Backend to Azure VM
 on:
   push:
     branches:
-      - main  
-    paths:    
-      - 'WebApi/**'
+      - main
+    paths: # Updated to reflect actual directory names
+      - 'WebApi/**' # Changed back from Api/**
       - 'Core/**'
-      - 'DataAccess/**'
+      - 'Infrastructure/**' # Kept as Infrastructure from previous input
       - '.github/workflows/**'
 
 env:
   DOTNET_VERSION: '9.0.203' # Your project's .NET version
-  
+
   # ---- IMPORTANT: Adjust these paths if your repository structure is different ----
-  # Assumes 'quizz-back.sln' (or similar) is at the root of your repository.
-  # If you don't use a solution file for building the whole thing, you might target PROJECT_PATH for restore/build too.
-  SOLUTION_FILE_PATH: 'quizz-back.sln'  # CHANGE if your solution file is named differently or located elsewhere
-  PROJECT_PATH: 'WebApi/Api.csproj'     # Path to your main WebApi project from the repository root
+  # SOLUTION_FILE_PATH: 'quizz-back.sln'  # Commented out as no .sln file is used
+  PROJECT_PATH: 'WebApi/Api.csproj'     # UPDATED: Path to your main WebApi project.
   # ----------------------------------------------------------------------------
 
   PUBLISH_OUTPUT_DIR_NAME: 'app-publish'   # A temporary directory name for the published output on the runner
   ARTIFACT_NAME: 'quizzapp-backend-pkg'    # Name for the build artifact (will be a .tar.gz)
-  
+
   # --- VM Deployment Specific ---
   VM_DEPLOY_PATH: '/var/www/quizzapp'        # Target deployment path on your Linux VM
   SERVICE_NAME: 'kestrel-quizzapp.service' # The systemd service name you configured on the VM
@@ -41,18 +39,26 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
         # For .NET 9 preview, if issues arise with SDK resolution, you might need:
-        # include-prerelease: true 
+        # include-prerelease: true
+        
+    - name: List files in workspace # Added for debugging if issues persist
+      run: |
+        pwd
+        echo "Listing files in root:"
+        ls -la
+        echo "Listing files in WebApi (if it exists):"
+        ls -la WebApi || echo "WebApi folder not found at root"
+        echo "Listing files in Api (if it exists):"
+        ls -la Api || echo "Api folder not found at root"
+
 
     - name: Restore dependencies
-      # If you have a solution file that includes all projects (WebApi, Core, DataAccess)
-      run: dotnet restore ${{ env.SOLUTION_FILE_PATH }}
-      # If you prefer to restore the WebApi project and its dependencies directly:
-      # run: dotnet restore ${{ env.PROJECT_PATH }}
+      # Restore the main project and its dependencies directly:
+      run: dotnet restore ${{ env.PROJECT_PATH }}
 
-    - name: Build solution
-      run: dotnet build ${{ env.SOLUTION_FILE_PATH }} --configuration Release --no-restore
-      # Or build the project directly:
-      # run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
+    - name: Build project # Renamed step for clarity
+      # Build the project directly:
+      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
 
     - name: Publish WebApi project
       run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output ${{ github.workspace }}/${{ env.PUBLISH_OUTPUT_DIR_NAME }} --no-build
@@ -72,10 +78,11 @@ jobs:
     needs: build # Ensures the build job completes successfully first
     runs-on: ubuntu-latest
     
-    # Optional: Define an environment for tracking deployments in GitHub
-    environment: 
+    environment:
       name: Showcase-VM-Deployment
-      url: http://${{ secrets.AZURE_VM_IP }} # Replace with the actual URL if you have a DNS name
+      url: ${{ env.DEPLOY_ENVIRONMENT_URL }} # Use the job-level env var for the full URL
+    env:
+      DEPLOY_ENVIRONMENT_URL: http://${{ secrets.AZURE_VM_IP }}:5000 # Define the full URL
 
     steps:
     - name: Download artifact
@@ -118,16 +125,6 @@ jobs:
           echo "Removing temporary artifact from VM..."
           sudo rm /tmp/${{ env.ARTIFACT_NAME }}.tar.gz
           
-          # Optional: Set correct ownership and permissions if your service runs as a non-root user (e.g., www-data)
-          # echo "Setting permissions..."
-          # sudo chown -R www-data:www-data ${{ env.VM_DEPLOY_PATH }} # Change www-data to your service user if different
-          # sudo chmod -R 755 ${{ env.VM_DEPLOY_PATH }}
-
-          # Ensure appsettings.json is present. 
-          # If you need to transform it (e.g., for production connection strings not stored in repo),
-          # you'd do it here or have a separate appsettings.Production.json deployed.
-          # For a showcase, your appsettings.json in the repo might be sufficient if it points to localhost MySQL on the VM.
-          
           echo "Starting application service: ${{ env.SERVICE_NAME }}"
           sudo systemctl start ${{ env.SERVICE_NAME }}
           
@@ -137,7 +134,6 @@ jobs:
           echo "Checking status of service: ${{ env.SERVICE_NAME }}"
           sudo systemctl status ${{ env.SERVICE_NAME }} --no-pager
           
-          # Final check to ensure the service is active, otherwise fail the job
           sudo systemctl is-active --quiet ${{ env.SERVICE_NAME }} || (echo "Service ${{ env.SERVICE_NAME }} is not active!" && exit 1)
           
           echo "--- Deployment to VM completed successfully! ---"
