@@ -3,8 +3,8 @@ name: Deploy QuizzApp Backend to Azure VM
 on:
   push:
     branches:
-      - main  
-    paths:    
+      - main
+    paths:
       - 'WebApi/**'
       - 'Core/**'
       - 'DataAccess/**'
@@ -12,17 +12,15 @@ on:
 
 env:
   DOTNET_VERSION: '9.0.203' # Your project's .NET version
-  
+
   # ---- IMPORTANT: Adjust these paths if your repository structure is different ----
-  # Assumes 'quizz-back.sln' (or similar) is at the root of your repository.
-  # If you don't use a solution file for building the whole thing, you might target PROJECT_PATH for restore/build too.
-  SOLUTION_FILE_PATH: 'quizz-back.sln'  # CHANGE if your solution file is named differently or located elsewhere
-  PROJECT_PATH: 'WebApi/Api.csproj'     # Path to your main WebApi project from the repository root
+  # SOLUTION_FILE_PATH: 'quizz-back.sln'  # Commented out as no .sln file is used
+  PROJECT_PATH: 'WebApi/WebApi.csproj'     # Path to your main WebApi project from the repository root
   # ----------------------------------------------------------------------------
 
   PUBLISH_OUTPUT_DIR_NAME: 'app-publish'   # A temporary directory name for the published output on the runner
   ARTIFACT_NAME: 'quizzapp-backend-pkg'    # Name for the build artifact (will be a .tar.gz)
-  
+
   # --- VM Deployment Specific ---
   VM_DEPLOY_PATH: '/var/www/quizzapp'        # Target deployment path on your Linux VM
   SERVICE_NAME: 'kestrel-quizzapp.service' # The systemd service name you configured on the VM
@@ -41,18 +39,15 @@ jobs:
       with:
         dotnet-version: ${{ env.DOTNET_VERSION }}
         # For .NET 9 preview, if issues arise with SDK resolution, you might need:
-        # include-prerelease: true 
+        # include-prerelease: true
 
     - name: Restore dependencies
-      # If you have a solution file that includes all projects (WebApi, Core, DataAccess)
-      run: dotnet restore ${{ env.SOLUTION_FILE_PATH }}
-      # If you prefer to restore the WebApi project and its dependencies directly:
-      # run: dotnet restore ${{ env.PROJECT_PATH }}
+      # Restore the WebApi project and its dependencies directly:
+      run: dotnet restore ${{ env.PROJECT_PATH }}
 
-    - name: Build solution
-      run: dotnet build ${{ env.SOLUTION_FILE_PATH }} --configuration Release --no-restore
-      # Or build the project directly:
-      # run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
+    - name: Build project # Renamed step for clarity
+      # Build the project directly:
+      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
 
     - name: Publish WebApi project
       run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output ${{ github.workspace }}/${{ env.PUBLISH_OUTPUT_DIR_NAME }} --no-build
@@ -72,11 +67,11 @@ jobs:
     needs: build # Ensures the build job completes successfully first
     runs-on: ubuntu-latest
     
-    # Optional: Define an environment for tracking deployments in GitHub
-    environment: 
+    environment:
       name: Showcase-VM-Deployment
-      #url: http://${{ secrets.AZURE_VM_IP }} # Replace with the actual URL if you have a DNS name
-      url: http://4.180.236.182:5000
+      url: ${{ env.DEPLOY_ENVIRONMENT_URL }} # Use the job-level env var for the full URL
+    env:
+      DEPLOY_ENVIRONMENT_URL: http://${{ secrets.AZURE_VM_IP }}:5000 # Define the full URL
 
     steps:
     - name: Download artifact
