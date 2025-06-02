@@ -75,7 +75,8 @@ jobs:
     # Optional: Define an environment for tracking deployments in GitHub
     environment: 
       name: Showcase-VM-Deployment
-      url: http://${{ secrets.AZURE_VM_IP }} # Replace with the actual URL if you have a DNS name
+      #url: http://${{ secrets.AZURE_VM_IP }} # Replace with the actual URL if you have a DNS name
+      url: http://4.180.236.182:5000
 
     steps:
     - name: Download artifact
