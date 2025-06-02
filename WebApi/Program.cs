@@ -26,7 +26,7 @@ builder.Services.AddTransient<IUserUseCases, UserUseCases>();
 
 
 // Add CORS services 
-// ATTENTION Il faut changer car la tout le monde peut acceder a l'API
+// ATTENTION a modifier si vous utilisez un autre port ou une autre URL pour Angular et Scalar
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
