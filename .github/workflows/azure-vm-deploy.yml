@@ -4,10 +4,10 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'WebApi/**'
+    paths: # Updated to reflect actual directory names
+      - 'Api/**'
       - 'Core/**'
-      - 'DataAccess/**'
+      - 'Infrastructure/**'
       - '.github/workflows/**'
 
 env:
@@ -15,7 +15,7 @@ env:
 
   # ---- IMPORTANT: Adjust these paths if your repository structure is different ----
   # SOLUTION_FILE_PATH: 'quizz-back.sln'  # Commented out as no .sln file is used
-  PROJECT_PATH: 'WebApi/WebApi.csproj'     # Path to your main WebApi project from the repository root
+  PROJECT_PATH: 'Api/Api.csproj'     # UPDATED: Path to your main WebApi project. Assumes Api.csproj inside Api/ folder. Please verify the .csproj filename.
   # ----------------------------------------------------------------------------
 
   PUBLISH_OUTPUT_DIR_NAME: 'app-publish'   # A temporary directory name for the published output on the runner
@@ -42,7 +42,7 @@ jobs:
         # include-prerelease: true
 
     - name: Restore dependencies
-      # Restore the WebApi project and its dependencies directly:
+      # Restore the main project and its dependencies directly:
       run: dotnet restore ${{ env.PROJECT_PATH }}
 
     - name: Build project # Renamed step for clarity
