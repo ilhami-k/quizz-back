@@ -45,7 +45,7 @@ namespace Infrastructure.Repositories
                     q.is_visible AS IsVisible,
                     
                     u.ID_user AS UserId,             
-                    u.username AS Name,              
+                    u.username AS Username,              
                     u.email AS Email, 
                     u.photo_url AS PhotoURL, 
                     u.is_admin AS IsAdmin, 
@@ -99,7 +99,7 @@ namespace Infrastructure.Repositories
                     q.is_visible AS IsVisible,
 
                     u.ID_user AS UserId, 
-                    u.username AS Name,              
+                    u.username AS Username,              
                     u.email AS Email, 
                     u.photo_url AS PhotoURL, 
                     u.is_admin AS IsAdmin, 
