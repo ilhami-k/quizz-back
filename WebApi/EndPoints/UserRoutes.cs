@@ -1,3 +1,6 @@
+using System;
+using Infrastructure.Models;
+using Infrastructure.repositories;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -6,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Core.Models;
 using Core.UseCases.Abstractions;
 using Microsoft.IdentityModel.Tokens;
+
 
 namespace Api.EndPoints;
 
@@ -31,6 +35,20 @@ public static class UserRoutes
         })
         .WithName("GetUserByUsername");
 
+        app.MapPut("/user/id", (int id, User updateUser, UserRepository repo) =>
+        {
+            var existingUser = repo.GetUserById(id);
+            if (existingUser == null) return Results.NotFound();
+
+            existingUser.Name = updateUser.Name;
+            existingUser.Email = updateUser.Email;
+
+            repo.UpdateUser(existingUser);
+            return Results.NoContent();
+        })
+        .WithName("UpdateUser");
+
+     
         app.MapPost("/users/register", ([FromBody] RegisterRequest request, IUserUseCases useCases) =>
         {
             useCases.Register(request);
