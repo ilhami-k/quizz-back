@@ -14,6 +14,7 @@ public class Quiz
 
     public int Dificulty { get; set; }
     public int UserId { get; set; }
+    public string? CreatorUsername{ get; set; }
     public DateTime CreatedAt { get; set; }
     public bool IsVisible { get; set; } = true;
     public List<Question>? Questions{ get; set; }
