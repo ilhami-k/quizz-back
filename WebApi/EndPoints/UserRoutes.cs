@@ -1,6 +1,6 @@
 using System;
 using Infrastructure.Models;
-using Infrastructure.repositories;
+using Infrastructure.Repositories;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -35,12 +35,12 @@ public static class UserRoutes
         })
         .WithName("GetUserByUsername");
 
-        app.MapPut("/user/id", (int id, User updateUser, UserRepository repo) =>
+        app.MapPut("/users/{id:int}", (int id, Core.Models.User updateUser, UserRepository repo) =>
         {
             var existingUser = repo.GetUserById(id);
             if (existingUser == null) return Results.NotFound();
 
-            existingUser.Name = updateUser.Name;
+            existingUser.Username = updateUser.Username;
             existingUser.Email = updateUser.Email;
 
             repo.UpdateUser(existingUser);

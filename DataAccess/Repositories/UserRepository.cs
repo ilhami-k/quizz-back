@@ -68,9 +68,9 @@ public class UserRepository(IConfiguration configuration) : IUserRepository
         using var connection = CreateConnection();
 
         var sql = @"UPDATE user 
-                    SET username = @Name, email = @Email
+                    SET username = @Username, email = @Email
                     WHERE ID_user = @UserId";
 
-        connection.Execute(sql, new { user.Name, user.Email});
+        connection.Execute(sql, new { user.Username, user.Email});
     }
 }
