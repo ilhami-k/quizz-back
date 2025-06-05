@@ -105,6 +105,7 @@ public class QuizGateway : IQuizGateway
             UserId = infraQuiz.Creator.UserId,
             CreatorUsername = infraQuiz.Creator?.Username,
             Dificulty = infraQuiz.Dificulty,
+            ParticipantsCount = infraQuiz.ParticipantsCount,
             IsVisible = infraQuiz.IsVisible,
             Questions = infraQuiz.Questions?.Select(infquest => new Core.Models.Question
             {
@@ -139,6 +140,7 @@ public class QuizGateway : IQuizGateway
             CategoryId = infraQuiz.Category?.CategoryId ?? 0,
             UserId = infraQuiz.Creator?.UserId ?? 0,
             CreatorUsername = infraQuiz.Creator?.Username,
+            ParticipantsCount = infraQuiz.ParticipantsCount,
             CreatedAt = infraQuiz.CreatedAt,
             IsVisible = infraQuiz.IsVisible,
             Questions = infraQuiz.Questions?.Select(iq => new Core.Models.Question
