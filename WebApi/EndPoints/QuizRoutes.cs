@@ -1,6 +1,7 @@
-using Infrastructure.Repositories.Abstractions;
-using Infrastructure.Models;
-using Microsoft.AspNetCore.Http; 
+using Core.Models;
+using Core.UseCases.Abstractions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Api.EndPoints
 {
@@ -8,19 +9,21 @@ namespace Api.EndPoints
     {
         public static void AddQuizRoutes(this WebApplication app)
         {
-            var quizGroup = app.MapGroup("/quizzes").WithTags("Quizzes");
+            var quizGroup = app.MapGroup("/quizzes")
+                               .WithTags("Quizzes")
+                               .WithOpenApi();
 
-            quizGroup.MapGet("/", (IQuizRepository repo) =>
+            quizGroup.MapGet("/", (IQuizUseCases quizUseCases) =>
             {
-                var quizzes = repo.GetAllQuizzes();
+                var quizzes = quizUseCases.GetAllQuizzes();
                 return Results.Ok(quizzes);
             })
             .WithName("GetAllQuizzes")
-            .Produces<IEnumerable<Quiz>>(StatusCodes.Status200OK);
+            .Produces<IEnumerable<Core.Models.Quiz>>(StatusCodes.Status200OK);
 
-            quizGroup.MapGet("/{id}", (int id, IQuizRepository repo) =>
+            quizGroup.MapGet("/{id:int}", (int id, IQuizUseCases quizUseCases) =>
             {
-                var quiz = repo.GetQuizById(id);
+                var quiz = quizUseCases.GetQuizById(id);
                 if (quiz is null)
                 {
                     return Results.NotFound($"Quiz with ID {id} not found.");
@@ -28,35 +31,32 @@ namespace Api.EndPoints
                 return Results.Ok(quiz);
             })
             .WithName("GetQuizById")
-            .Produces<Quiz>(StatusCodes.Status200OK)
+            .Produces<Core.Models.Quiz>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
-            quizGroup.MapPost("/", (Quiz quiz, IQuizRepository repo) =>
+            quizGroup.MapPost("/create", ([FromBody] Core.Models.Quiz quizToCreate, IQuizUseCases quizUseCases) =>
             {
-                if (quiz == null || quiz.Creator == null || quiz.category == null)
+                try
                 {
-                    return Results.BadRequest("Quiz, Creator, and Category information must be provided.");
+                    if (quizToCreate == null) {
+                         return Results.BadRequest("Invalid quiz data provided.");
+                    }
+                    var createdQuiz = quizUseCases.CreateQuiz(quizToCreate);
+                    return Results.CreatedAtRoute("GetQuizById", new { id = createdQuiz.QuizId }, createdQuiz);
                 }
-                quiz.CreatedAt = DateTime.UtcNow;
-                var createdQuiz = repo.AddQuiz(quiz);
-                return Results.CreatedAtRoute("GetQuizById", new { id = createdQuiz.QuizId }, createdQuiz);
+                catch (ArgumentException argEx)
+                {
+                    return Results.BadRequest(new { message = argEx.Message });
+                }
+                catch (Exception )
+                {
+                    return Results.Problem("An unexpected error occurred while creating the quiz.", statusCode: StatusCodes.Status500InternalServerError);
+                }
             })
             .WithName("CreateQuiz")
-            .Produces<Quiz>(StatusCodes.Status201Created)
-            .Produces(StatusCodes.Status400BadRequest);
-
-            quizGroup.MapDelete("/{id}", (int id, IQuizRepository repo) =>
-            {
-                var updatedQuiz = repo.ToggleQuizVisibility(id);
-                if (updatedQuiz is null)
-                {
-                    return Results.NotFound($"Quiz with ID {id} not found.");
-                }
-                return Results.Ok(updatedQuiz);
-            })
-            .WithName("ToggleQuizVisibility")
-            .Produces<Quiz>(StatusCodes.Status200OK)
-            .Produces(StatusCodes.Status404NotFound);
+            .Produces<Core.Models.Quiz>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
         }
     }
 }

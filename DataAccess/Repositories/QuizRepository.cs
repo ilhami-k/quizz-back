@@ -15,9 +15,9 @@ namespace Infrastructure.Repositories
     public class QuizRepository : IQuizRepository
     {
         private readonly string _connectionString;
-        private readonly IQuestionRepository _questionRepository; // Inject IQuestionRepository
+        private readonly IQuestionRepository _questionRepository; 
 
-        // Updated constructor
+
         public QuizRepository(IConfiguration configuration, IQuestionRepository questionRepository)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection")
@@ -65,17 +65,16 @@ namespace Infrastructure.Repositories
                 (quiz, user, category) =>
                 {
                     quiz.Creator = user; 
-                    quiz.category = category; 
+                    quiz.Category = category; 
                     return quiz;
                 },
                 splitOn: "UserId,CategoryId" 
-            ).ToList(); // Materialize the list to iterate
+            ).ToList(); 
 
             if (quizzes.Any())
             {
                 foreach (var quiz in quizzes)
                 {
-                    // Fetch and assign questions for each quiz
                     quiz.Questions = _questionRepository.GetQuestionsByQuizId(quiz.QuizId).ToList();
                 }
             }
@@ -115,13 +114,12 @@ namespace Infrastructure.Repositories
                 JOIN category c ON q.category_id_category = c.ID_category
                 WHERE q.ID_quizz = @QuizId;";
             
-            // Use Query and then FirstOrDefault to handle the multiple mapping.
             var quizWithDetails = connection.Query<Quiz, User, Category, Quiz>(
                 sql,
                 (quiz, user, category) =>
                 {
                     quiz.Creator = user; 
-                    quiz.category = category;
+                    quiz.Category = category;
                     return quiz;
                 },
                 new { QuizId = quizId },
@@ -130,7 +128,6 @@ namespace Infrastructure.Repositories
 
             if (quizWithDetails != null)
             {
-                // Fetch and assign questions for the quiz
                 quizWithDetails.Questions = _questionRepository.GetQuestionsByQuizId(quizWithDetails.QuizId).ToList();
             }
             
@@ -140,8 +137,7 @@ namespace Infrastructure.Repositories
         public Quiz AddQuiz(Quiz quiz)
         {
             using var connection = CreateConnection();
-            // Ensure Creator and category are not null and have valid IDs if they are expected to be existing.
-            // For simplicity, assuming Creator.UserId and category.CategoryId are set correctly.
+
             var sql = @"
                 INSERT INTO quizz (user_id_user, category_id_category, title, description, difficulty, created_at, num_users, num_questions, is_visible) 
                 VALUES (@CreatorUserId, @QuizCategoryId, @Title, @Description, @Dificulty, @CreatedAt, @ParticipantsCount, @TotalQuestions, @IsVisible);
@@ -149,13 +145,13 @@ namespace Infrastructure.Repositories
 
             var parameters = new 
             {
-                CreatorUserId = quiz.Creator.UserId, // Assuming Creator object is populated with UserId
-                QuizCategoryId = quiz.category.CategoryId, // Assuming category object is populated with CategoryId
+                CreatorUserId = quiz.Creator.UserId, 
+                QuizCategoryId = quiz.Category.CategoryId, 
                 quiz.Title,
                 quiz.Description,
                 quiz.Dificulty,
                 quiz.CreatedAt,
-                quiz.ParticipantsCount, // Added this as it was in the original table but not in AddQuiz before
+                quiz.ParticipantsCount, 
                 quiz.TotalQuestions,
                 quiz.IsVisible
             };
@@ -163,16 +159,11 @@ namespace Infrastructure.Repositories
             int newQuizId = connection.ExecuteScalar<int>(sql, parameters);
             quiz.QuizId = newQuizId;
             
-            // Note: If questions should be added along with the quiz, that logic would go here,
-            // potentially calling _questionRepository.AddQuestion for each question in quiz.Questions.
-            // However, the current setup adds questions to an *existing* quiz via QuestionRoutes.
-
             return quiz; 
         }
         public Quiz? ToggleQuizVisibility(int quizId)
         {
             using var connection = CreateConnection();
-            // GetQuizById will now also fetch questions, so we get the full model.
             var currentQuiz = GetQuizById(quizId); 
             if (currentQuiz == null)
             {

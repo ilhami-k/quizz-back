@@ -14,6 +14,6 @@ public class Quiz
     public int TotalQuestions { get; set; }
     public bool IsVisible { get; set; }
     public required User Creator { get; set; }
-    public required Category category { get; set; }
+    public required Category Category { get; set; }
     public IList<Question>? Questions { get; set;}
 }
