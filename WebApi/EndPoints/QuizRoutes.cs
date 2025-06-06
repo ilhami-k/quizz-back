@@ -38,8 +38,9 @@ namespace Api.EndPoints
             {
                 try
                 {
-                    if (quizToCreate == null) {
-                         return Results.BadRequest("Invalid quiz data provided.");
+                    if (quizToCreate == null)
+                    {
+                        return Results.BadRequest("Invalid quiz data provided.");
                     }
                     var createdQuiz = quizUseCases.CreateQuiz(quizToCreate);
                     return Results.CreatedAtRoute("GetQuizById", new { id = createdQuiz.QuizId }, createdQuiz);
@@ -48,7 +49,7 @@ namespace Api.EndPoints
                 {
                     return Results.BadRequest(new { message = argEx.Message });
                 }
-                catch (Exception )
+                catch (Exception)
                 {
                     return Results.Problem("An unexpected error occurred while creating the quiz.", statusCode: StatusCodes.Status500InternalServerError);
                 }
@@ -57,6 +58,17 @@ namespace Api.EndPoints
             .Produces<Core.Models.Quiz>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status500InternalServerError);
-        }
+
+            quizGroup.MapGet("/category/{categoryId:int}", (int categoryId, IQuizUseCases quizUseCases) =>
+            {
+                var quizzes = quizUseCases.GetQuizzesByCategoryId(categoryId);
+                if (quizzes is null || !quizzes.Any())
+                {
+                    return Results.NotFound($"No quizzes found for category ID {categoryId}.");
+                }
+                return Results.Ok(quizzes);
+            })
+            .WithName("GetQuizzesByCategoryId");
+        } 
     }
 }

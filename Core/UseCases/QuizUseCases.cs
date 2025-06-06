@@ -35,5 +35,9 @@ public class QuizUseCases : IQuizUseCases
         return _quizGateway.GetAllQuizzes();
     }
 
+    public IEnumerable<Quiz> GetQuizzesByCategoryId(int categoryId)
+    {
+        return _quizGateway.GetQuizzesByCategoryId(categoryId);
+    }
     
 }
