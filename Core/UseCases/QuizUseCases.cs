@@ -39,5 +39,39 @@ public class QuizUseCases : IQuizUseCases
     {
         return _quizGateway.GetQuizzesByCategoryId(categoryId);
     }
+        public QuizResult SubmitQuiz(QuizSubmission submission)
+    {
+        if (submission == null || submission.Answers == null)
+        {
+            throw new ArgumentNullException(nameof(submission), "La soumission ne peut pas être nulle.");
+        }
+
+        var quiz = _quizGateway.GetQuizById(submission.QuizId);
+        if (quiz == null || quiz.Questions == null)
+        {
+            throw new KeyNotFoundException($"Le quiz avec l'ID {submission.QuizId} n'a pas été trouvé ou ne contient pas de questions.");
+        }
+
+        int score = 0;
+        foreach (var userAnswer in submission.Answers)
+        {
+            var question = quiz.Questions.FirstOrDefault(q => q.QuestionId == userAnswer.QuestionId);
+            if (question != null && question.Answers != null)
+            {
+                var correctAnswer = question.Answers.FirstOrDefault(a => a.IsCorrect);
+                if (correctAnswer != null && correctAnswer.AnswerId == userAnswer.AnswerId)
+                {
+                    score++;
+                }
+            }
+        }
+
+        return new QuizResult
+        {
+            Score = score,
+            TotalQuestions = quiz.Questions.Count,
+            Message = $"Votre score est de {score} sur {quiz.Questions.Count}."
+        };
+    }
     
 }

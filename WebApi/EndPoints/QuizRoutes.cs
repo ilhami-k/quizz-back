@@ -69,6 +69,34 @@ namespace Api.EndPoints
                 return Results.Ok(quizzes);
             })
             .WithName("GetQuizzesByCategoryId");
+
+            quizGroup.MapPost("/submit", ([FromBody] QuizSubmission submission, IQuizUseCases quizUseCases) =>
+            {
+                try
+                {
+                    var result = quizUseCases.SubmitQuiz(submission);
+                    return Results.Ok(result);
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    return Results.NotFound(new { message = ex.Message });
+                }
+                catch (ArgumentException ex)
+                {
+                    return Results.BadRequest(new { message = ex.Message });
+                }
+                catch (Exception)
+                {
+                    return Results.Problem("Une erreur inattendue est survenue lors de la soumission du quiz.", statusCode: StatusCodes.Status500InternalServerError);
+                }
+            })
+            .WithName("SubmitQuiz")
+            .Produces<QuizResult>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status500InternalServerError);
+        
         } 
+        
     }
 }
