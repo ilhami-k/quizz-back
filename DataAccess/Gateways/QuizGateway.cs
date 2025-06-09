@@ -254,8 +254,37 @@ public class QuizGateway : IQuizGateway
         }).ToList();
     }
     
-    
+    public IEnumerable<Core.Models.Quiz> GetQuizzesByCategoryId(int categoryId)
+    {
+        var infraQuizzes = _quizRepository.GetQuizzesByCategoryId(categoryId);
+        return infraQuizzes.Select(infraQuiz => new Core.Models.Quiz
+        {
+            QuizId = infraQuiz.QuizId,
+            Title = infraQuiz.Title,
+            Description = infraQuiz.Description,
+            Dificulty = infraQuiz.Dificulty,
+            CategoryId = infraQuiz.Category?.CategoryId ?? 0,
+            UserId = infraQuiz.Creator?.UserId ?? 0,
+            CreatorUsername = infraQuiz.Creator?.Username,
+            ParticipantsCount = infraQuiz.ParticipantsCount,
+            CreatedAt = infraQuiz.CreatedAt,
+            IsVisible = infraQuiz.IsVisible,
+            Questions = infraQuiz.Questions?.Select(iq => new Core.Models.Question
+            {
+                QuestionId = iq.QuestionId,
+                QuestionText = iq.QuestionText,
+                QuestionType = iq.QuestionType,
+                Timer = iq.Timer,
+                CreatedAt = iq.CreatedAt,
+                Answers = iq.Answers?.Select(ia => new Core.Models.Answer
+                {
+                    AnswerId = ia.AnswerId,
+                    AnswerText = ia.AnswerText,
+                    IsCorrect = ia.CorrectAnswer,
+                    CreatedAt = ia.CreatedAt
+                }).ToList()
+            }).ToList()
+        }).ToList();
+    }
         
-
-
 }
