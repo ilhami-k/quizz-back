@@ -71,6 +71,6 @@ public class UserRepository(IConfiguration configuration) : IUserRepository
                     SET username = @Username, email = @Email
                     WHERE ID_user = @UserId";
 
-        connection.Execute(sql, new { user.Username, user.Email});
+        connection.Execute(sql, user);
     }
 }

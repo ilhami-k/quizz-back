@@ -35,20 +35,33 @@ public static class UserRoutes
         })
         .WithName("GetUserByUsername");
 
-        app.MapPut("/users/{id:int}", (int id, Core.Models.User updateUser, UserRepository repo) =>
+        app.MapPut("/users/update/{id:int}", (int id, [FromBody] Core.Models.User userToUpdate, IUserUseCases useCases) =>
         {
-            var existingUser = repo.GetUserById(id);
-            if (existingUser == null) return Results.NotFound();
+            if (id != userToUpdate.UserId)
+            {
+                return Results.BadRequest("User ID in URL does not match user ID in body.");
+            }
 
-            existingUser.Username = updateUser.Username;
-            existingUser.Email = updateUser.Email;
-
-            repo.UpdateUser(existingUser);
-            return Results.NoContent();
+            try
+            {
+                useCases.UpdateUser(userToUpdate);
+                return Results.Ok(userToUpdate);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { message = ex.Message });
+            }
         })
-        .WithName("UpdateUser");
+        .WithName("UpdateUser")
+        .Produces<Core.Models.User>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status400BadRequest);
 
-     
+
         app.MapPost("/users/register", ([FromBody] RegisterRequest request, IUserUseCases useCases) =>
         {
             useCases.Register(request);

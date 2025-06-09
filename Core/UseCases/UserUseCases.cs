@@ -66,4 +66,21 @@ public class UserUseCases : IUserUseCases
         };
         _userGateway.AddUser(newUser, hashedPassword);
     }
+
+    public void UpdateUser(User user)
+    {
+        if (user == null || string.IsNullOrWhiteSpace(user.Username) || string.IsNullOrWhiteSpace(user.Email))
+        {
+            throw new ArgumentException("Donnée incomplète.");
+        }
+
+        var existingUser = _userGateway.GetUserById(user.UserId);
+        if (existingUser == null)
+        {
+            throw new KeyNotFoundException("Pas d'utilisateurs trouvés.");
+        }
+
+        _userGateway.UpdateUser(user);
+    }
 }
+    

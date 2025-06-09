@@ -12,4 +12,5 @@ public interface IUserGateway
     IEnumerable<User> GetAllUsers();
     void DeleteUser(int userId);
     string? GetUserPasswordHash(string username);
+    void UpdateUser(User user);
 }

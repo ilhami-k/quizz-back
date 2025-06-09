@@ -30,7 +30,7 @@ public class UserGateway : IUserGateway
             Username = user.Username,
             Email = user.Email,
             IsAdmin = user.IsAdmin,
-            PasswordHash = passwordHash 
+            PasswordHash = passwordHash
         };
 
         _userRepository.AddUser(newInfraUser);
@@ -87,4 +87,23 @@ public class UserGateway : IUserGateway
             ParticipatedQuizzes = user.ParticipatedQuizzes
         };
     }
+
+    public void UpdateUser(Core.Models.User user)
+    {
+        if (user == null)
+        {
+            throw new ArgumentNullException(nameof(user));
+
+        }
+
+        var infraUser = new Infrastructure.Models.User
+        {
+            UserId = user.UserId,
+            Username = user.Username,
+            Email = user.Email
+        };
+
+        _userRepository.UpdateUser(infraUser); 
+    }
+
 }
