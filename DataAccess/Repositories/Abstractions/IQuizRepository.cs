@@ -7,7 +7,8 @@ namespace Infrastructure.Repositories.Abstractions
     {
         Quiz? GetQuizById(int quizId);
         IEnumerable<Quiz> GetAllQuizzes();
-        Quiz AddQuiz(Quiz quiz); 
+        Quiz AddQuiz(Quiz quiz);
         Quiz? ToggleQuizVisibility(int quizId);
+        IEnumerable<Quiz> GetQuizzesByCategoryId(int categoryId);
     }
 }

@@ -12,8 +12,6 @@ public interface IQuizGateway
     Question? GetQuestionById(int questionId);
     Question AddQuestionToQuiz(int quizId, Question question);
     IEnumerable<Answer> GetAnswersByQuestionId(int questionId);
-
-
-
+    IEnumerable<Quiz> GetQuizzesByCategoryId(int categoryId);
 
 }
