@@ -9,4 +9,5 @@ public interface IQuizUseCases
     Quiz? GetQuizById(int quizId);
     IEnumerable<Quiz> GetAllQuizzes();
     IEnumerable<Quiz> GetQuizzesByCategoryId(int categoryId);
+    QuizResult SubmitQuiz(QuizSubmission submission);
 }
