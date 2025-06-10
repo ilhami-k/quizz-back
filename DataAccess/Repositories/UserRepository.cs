@@ -30,7 +30,7 @@ public class UserRepository(IConfiguration configuration) : IUserRepository
             @"SELECT ID_user AS UserId, username AS Username, email, password_hash AS PasswordHash, photo_url AS PhotoURL, is_admin AS IsAdmin, created_date AS CreatedAt, created_quizz AS CreatedQuizzes, taken_quizz AS ParticipatedQuizzes 
             FROM user
             WHERE ID_user = @UserId"
-        , new {UserId = userId});
+        , new { UserId = userId });
     }
 
     public User? GetUserByUsername(string username)
@@ -60,6 +60,22 @@ public class UserRepository(IConfiguration configuration) : IUserRepository
 
         var sql = "DELETE FROM user WHERE ID_user = @UserId";
 
-        connection.Execute(sql, new { UserId = userId });
+        var affectedRows = connection.Execute(sql, new { UserId = userId });
+
+        if (affectedRows == 0)
+        {
+            throw new KeyNotFoundException("aucun utilisateur trouvé avec cette id pour la suppression");
+        }
+    }
+    
+    public void UpdateUser(User user)
+    {
+        using var connection = CreateConnection();
+
+        var sql = @"UPDATE user 
+                    SET username = @Username, email = @Email
+                    WHERE ID_user = @UserId";
+
+        connection.Execute(sql, user);
     }
 }

@@ -9,4 +9,8 @@ public interface IUserRepository
     void AddUser(User user);
     void DeleteUser(int userId);
     IEnumerable<User> GetAllUsers();
+
+    void UpdateUser(User user);
+
+
 }

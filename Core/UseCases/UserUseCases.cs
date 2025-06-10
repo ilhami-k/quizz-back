@@ -13,6 +13,8 @@ public class UserUseCases : IUserUseCases
         _userGateway = userGateway ?? throw new ArgumentNullException(nameof(userGateway));
     }
 
+
+
     public User AuthenticateAndGetUser(AuthenticationRequest request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
@@ -45,6 +47,11 @@ public class UserUseCases : IUserUseCases
         return users;
     }
 
+    public User? GetUserbyId(int userId)
+    {
+        return _userGateway.GetUserById(userId);
+    }
+
     public void Register(RegisterRequest request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password) || string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.ConfirmPassword))
@@ -66,4 +73,34 @@ public class UserUseCases : IUserUseCases
         };
         _userGateway.AddUser(newUser, hashedPassword);
     }
+
+    public void UpdateUser(User user)
+    {
+        if (user == null || string.IsNullOrWhiteSpace(user.Username) || string.IsNullOrWhiteSpace(user.Email))
+        {
+            throw new ArgumentException("Donnée incomplète.");
+        }
+
+        var existingUser = _userGateway.GetUserById(user.UserId);
+        if (existingUser == null)
+        {
+            throw new KeyNotFoundException("Pas d'utilisateurs trouvés.");
+        }
+
+        _userGateway.UpdateUser(user);
+    }
+
+    public void DeleteUser(int userId)
+    {
+        var existingUser = _userGateway.GetUserById(userId);
+        if (existingUser == null)
+        {
+            throw new KeyNotFoundException("utilisateur non trouvé, impossible de supprimé");
+        }
+        _userGateway.DeleteUser(userId);
+
+    }
+
+
 }
+    
