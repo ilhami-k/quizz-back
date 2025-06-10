@@ -39,9 +39,9 @@ public class UserGateway : IUserGateway
     {
         if (userId <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(userId), "User ID must be greater than zero.");
+            _userRepository.DeleteUser(userId);
         }
-        _userRepository.DeleteUser(userId);
+        
     }
 
     public string? GetUserPasswordHash(string username)

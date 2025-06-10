@@ -60,7 +60,12 @@ public class UserRepository(IConfiguration configuration) : IUserRepository
 
         var sql = "DELETE FROM user WHERE ID_user = @UserId";
 
-        connection.Execute(sql, new { UserId = userId });
+        var affectedRows = connection.Execute(sql, new { UserId = userId });
+
+        if (affectedRows == 0)
+        {
+            throw new KeyNotFoundException("aucun utilisateur trouvé avec cette id pour la suppression");
+        }
     }
     
     public void UpdateUser(User user)

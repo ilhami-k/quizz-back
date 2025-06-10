@@ -13,6 +13,8 @@ public class UserUseCases : IUserUseCases
         _userGateway = userGateway ?? throw new ArgumentNullException(nameof(userGateway));
     }
 
+
+
     public User AuthenticateAndGetUser(AuthenticationRequest request)
     {
         if (request == null || string.IsNullOrWhiteSpace(request.Username) || string.IsNullOrWhiteSpace(request.Password))
@@ -43,6 +45,11 @@ public class UserUseCases : IUserUseCases
     {
         var users = _userGateway.GetAllUsers();
         return users;
+    }
+
+    public User? GetUserbyId(int userId)
+    {
+        return _userGateway.GetUserById(userId);
     }
 
     public void Register(RegisterRequest request)
@@ -82,5 +89,18 @@ public class UserUseCases : IUserUseCases
 
         _userGateway.UpdateUser(user);
     }
+
+    public void DeleteUser(int userId)
+    {
+        var existingUser = _userGateway.GetUserById(userId);
+        if (existingUser == null)
+        {
+            throw new KeyNotFoundException("utilisateur non trouvé, impossible de supprimé");
+        }
+        _userGateway.DeleteUser(userId);
+
+    }
+
+
 }
     

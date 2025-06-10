@@ -9,4 +9,8 @@ public interface IUserUseCases
     IEnumerable<User> GetAllUsers();
 
     void UpdateUser(User user);
+
+    void DeleteUser(int userId);
+
+    User? GetUserbyId(int userId);
 }

@@ -113,18 +113,26 @@ public static class UserRoutes
             }
         })
         .WithName("Authentication");
-
-        app.MapDelete("/users/delete/{id}", (int id, IUserRepository repo) =>
+        
+        app.MapDelete("/users/delete/{id:int}", (int id, IUserUseCases useCases) =>
         {
-            var user = repo.GetUserById(id);
-            if (user == null)
+            try
             {
-                return Results.NotFound($"User with ID {id} not found.");
+                useCases.DeleteUser(id);
+                return Results.Ok(new { message = "Utilisateur supprimé avec succès." });
             }
-
-            repo.DeleteUser(id);
-            return Results.NoContent();
+            catch (KeyNotFoundException ex)
+            {
+                return Results.NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem("Une erreur est survenue lors de la suppression de l'utilisateur.");
+            }
         })
-        .WithName("DeleteUser");
+        .WithName("DeleteUser")
+        .RequireAuthorization(); 
+
+
     }
 }
