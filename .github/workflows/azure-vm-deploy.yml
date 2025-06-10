@@ -1,0 +1,139 @@
+name: Deploy QuizzApp Backend to Azure VM
+
+on:
+  push:
+    branches:
+      - main
+    paths: # Updated to reflect actual directory names
+      - 'WebApi/**' # Changed back from Api/**
+      - 'Core/**'
+      - 'Infrastructure/**' # Kept as Infrastructure from previous input
+      - '.github/workflows/**'
+
+env:
+  DOTNET_VERSION: '9.0.203' # Your project's .NET version
+
+  # ---- IMPORTANT: Adjust these paths if your repository structure is different ----
+  # SOLUTION_FILE_PATH: 'quizz-back.sln'  # Commented out as no .sln file is used
+  PROJECT_PATH: 'WebApi/Api.csproj'     # UPDATED: Path to your main WebApi project.
+  # ----------------------------------------------------------------------------
+
+  PUBLISH_OUTPUT_DIR_NAME: 'app-publish'   # A temporary directory name for the published output on the runner
+  ARTIFACT_NAME: 'quizzapp-backend-pkg'    # Name for the build artifact (will be a .tar.gz)
+
+  # --- VM Deployment Specific ---
+  VM_DEPLOY_PATH: '/var/www/quizzapp'        # Target deployment path on your Linux VM
+  SERVICE_NAME: 'kestrel-quizzapp.service' # The systemd service name you configured on the VM
+
+jobs:
+  build:
+    name: Build and Publish .NET Backend
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        # For .NET 9 preview, if issues arise with SDK resolution, you might need:
+        # include-prerelease: true
+        
+    - name: List files in workspace # Added for debugging if issues persist
+      run: |
+        pwd
+        echo "Listing files in root:"
+        ls -la
+        echo "Listing files in WebApi (if it exists):"
+        ls -la WebApi || echo "WebApi folder not found at root"
+        echo "Listing files in Api (if it exists):"
+        ls -la Api || echo "Api folder not found at root"
+
+
+    - name: Restore dependencies
+      # Restore the main project and its dependencies directly:
+      run: dotnet restore ${{ env.PROJECT_PATH }}
+
+    - name: Build project # Renamed step for clarity
+      # Build the project directly:
+      run: dotnet build ${{ env.PROJECT_PATH }} --configuration Release --no-restore
+
+    - name: Publish WebApi project
+      run: dotnet publish ${{ env.PROJECT_PATH }} --configuration Release --output ${{ github.workspace }}/${{ env.PUBLISH_OUTPUT_DIR_NAME }} --no-build
+
+    - name: Archive publish output
+      # Creates a tar.gz file from the contents of the publish directory
+      run: tar -czvf ${{ env.ARTIFACT_NAME }}.tar.gz -C ${{ github.workspace }}/${{ env.PUBLISH_OUTPUT_DIR_NAME }} .
+
+    - name: Upload artifact for deployment
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.ARTIFACT_NAME }} # The name of the artifact being uploaded
+        path: ${{ env.ARTIFACT_NAME }}.tar.gz # Path to the .tar.gz file on the runner
+
+  deploy:
+    name: Deploy to Azure VM
+    needs: build # Ensures the build job completes successfully first
+    runs-on: ubuntu-latest
+    
+    environment:
+      name: Showcase-VM-Deployment
+      url: ${{ env.DEPLOY_ENVIRONMENT_URL }} # Use the job-level env var for the full URL
+    env:
+      DEPLOY_ENVIRONMENT_URL: http://${{ secrets.AZURE_VM_IP }}:5000 # Define the full URL
+
+    steps:
+    - name: Download artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: ${{ env.ARTIFACT_NAME }} # Name of the artifact to download (the .tar.gz file)
+
+    - name: Copy artifact to VM via SCP
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.AZURE_VM_IP }}
+        username: ${{ secrets.AZURE_VM_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }} # Ensure this is the private key content
+        port: 22 # Default is 22
+        source: "${{ env.ARTIFACT_NAME }}.tar.gz" # File from the runner's workspace
+        target: "/tmp/" # Temporary directory on the VM to upload the package
+
+    - name: Deploy, Extract, and Restart Service on VM
+      uses: appleboy/ssh-action@v1.0.3 # Using a specific, stable version
+      with:
+        host: ${{ secrets.AZURE_VM_IP }}
+        username: ${{ secrets.AZURE_VM_USER }}
+        key: ${{ secrets.SSH_PRIVATE_KEY }}
+        port: 22
+        script: |
+          echo "--- Starting deployment on VM: ${{ env.VM_DEPLOY_PATH }} ---"
+          
+          echo "Stopping application service: ${{ env.SERVICE_NAME }}"
+          sudo systemctl stop ${{ env.SERVICE_NAME }} || echo "Warning: Service was not running or failed to stop gracefully."
+          
+          echo "Creating deployment directory (if it doesn't exist)..."
+          sudo mkdir -p ${{ env.VM_DEPLOY_PATH }}
+          
+          echo "Clearing old application files..."
+          sudo rm -rf ${{ env.VM_DEPLOY_PATH }}/*
+          
+          echo "Extracting new application files from /tmp/${{ env.ARTIFACT_NAME }}.tar.gz to ${{ env.VM_DEPLOY_PATH }}"
+          sudo tar -xzvf /tmp/${{ env.ARTIFACT_NAME }}.tar.gz -C ${{ env.VM_DEPLOY_PATH }}
+          
+          echo "Removing temporary artifact from VM..."
+          sudo rm /tmp/${{ env.ARTIFACT_NAME }}.tar.gz
+          
+          echo "Starting application service: ${{ env.SERVICE_NAME }}"
+          sudo systemctl start ${{ env.SERVICE_NAME }}
+          
+          echo "Waiting for service to start..."
+          sleep 5 # Give the service a moment to start up
+          
+          echo "Checking status of service: ${{ env.SERVICE_NAME }}"
+          sudo systemctl status ${{ env.SERVICE_NAME }} --no-pager
+          
+          sudo systemctl is-active --quiet ${{ env.SERVICE_NAME }} || (echo "Service ${{ env.SERVICE_NAME }} is not active!" && exit 1)
+          
+          echo "--- Deployment to VM completed successfully! ---"
