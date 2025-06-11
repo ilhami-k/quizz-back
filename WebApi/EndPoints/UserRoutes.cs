@@ -113,7 +113,7 @@ public static class UserRoutes
             }
         })
         .WithName("Authentication");
-        
+
         app.MapDelete("/users/delete/{id:int}", (int id, IUserUseCases useCases) =>
         {
             try
@@ -130,8 +130,7 @@ public static class UserRoutes
                 return Results.Problem("Une erreur est survenue lors de la suppression de l'utilisateur.");
             }
         })
-        .WithName("DeleteUser")
-        .RequireAuthorization(); 
+        .WithName("DeleteUser");
 
 
     }
