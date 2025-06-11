@@ -1,6 +1,6 @@
 using System;
 using Infrastructure.Models;
-using Infrastructure.repositories;
+using Infrastructure.Repositories;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -35,20 +35,33 @@ public static class UserRoutes
         })
         .WithName("GetUserByUsername");
 
-        app.MapPut("/user/id", (int id, User updateUser, UserRepository repo) =>
+        app.MapPut("/users/update/{id:int}", (int id, [FromBody] Core.Models.User userToUpdate, IUserUseCases useCases) =>
         {
-            var existingUser = repo.GetUserById(id);
-            if (existingUser == null) return Results.NotFound();
+            if (id != userToUpdate.UserId)
+            {
+                return Results.BadRequest("User ID in URL does not match user ID in body.");
+            }
 
-            existingUser.Name = updateUser.Name;
-            existingUser.Email = updateUser.Email;
-
-            repo.UpdateUser(existingUser);
-            return Results.NoContent();
+            try
+            {
+                useCases.UpdateUser(userToUpdate);
+                return Results.Ok(userToUpdate);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return Results.NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { message = ex.Message });
+            }
         })
-        .WithName("UpdateUser");
+        .WithName("UpdateUser")
+        .Produces<Core.Models.User>(StatusCodes.Status200OK)
+        .ProducesProblem(StatusCodes.Status404NotFound)
+        .ProducesProblem(StatusCodes.Status400BadRequest);
 
-     
+
         app.MapPost("/users/register", ([FromBody] RegisterRequest request, IUserUseCases useCases) =>
         {
             useCases.Register(request);
@@ -100,18 +113,26 @@ public static class UserRoutes
             }
         })
         .WithName("Authentication");
-
-        app.MapDelete("/users/delete/{id}", (int id, IUserRepository repo) =>
+        
+        app.MapDelete("/users/delete/{id:int}", (int id, IUserUseCases useCases) =>
         {
-            var user = repo.GetUserById(id);
-            if (user == null)
+            try
             {
-                return Results.NotFound($"User with ID {id} not found.");
+                useCases.DeleteUser(id);
+                return Results.Ok(new { message = "Utilisateur supprimé avec succès." });
             }
-
-            repo.DeleteUser(id);
-            return Results.NoContent();
+            catch (KeyNotFoundException ex)
+            {
+                return Results.NotFound(new { message = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return Results.Problem("Une erreur est survenue lors de la suppression de l'utilisateur.");
+            }
         })
-        .WithName("DeleteUser");
+        .WithName("DeleteUser")
+        .RequireAuthorization(); 
+
+
     }
 }
