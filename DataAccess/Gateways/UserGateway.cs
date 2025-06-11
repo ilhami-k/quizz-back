@@ -37,7 +37,7 @@ public class UserGateway : IUserGateway
     }
     public void DeleteUser(int userId)
     {
-        if (userId <= 0)
+        if (userId >= 0)
         {
             _userRepository.DeleteUser(userId);
         }
