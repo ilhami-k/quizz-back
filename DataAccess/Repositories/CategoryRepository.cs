@@ -3,21 +3,28 @@ using Infrastructure.Models;
 using Dapper;
 using MySql.Data.MySqlClient;
 using Org.BouncyCastle.Tls;
+using Microsoft.Extensions.Configuration;
+using System.Data;
+using Infrastructure.Repositories.Abstractions;
 
 namespace Infrastructure.Repositories;
 
-public class CategoryRepository
+public class CategoryRepository : ICategoryRepository
 {
     private readonly string _connectionString;
 
-    public CategoryRepository()
-    {
-        _connectionString = "Server=localhost;Database=quizzv2;User=root;Password=admin;";
-    }
+    public CategoryRepository(IConfiguration configuration)
+        {
+            _connectionString = configuration.GetConnectionString("DefaultConnection")
+                ?? throw new ArgumentNullException(nameof(configuration), "Database connection string 'DefaultConnection' not found.");
+        }
+
+        private IDbConnection CreateConnection() => new MySqlConnection(_connectionString);
+
 
     public IEnumerable<Category> GetAllCategories()
     {
-        using var connection = new MySqlConnection(_connectionString);
+        using var connection = CreateConnection();
         return connection.Query<Category>(
             "SELECT ID_category AS CategoryId, name FROM category"
         );
@@ -25,7 +32,7 @@ public class CategoryRepository
 
     public string? GetCategoryById(int categoryId)
     {
-        using var connection = new MySqlConnection(_connectionString);
+        using var connection = CreateConnection();
 
         var sql = @"SELECT name FROM category 
         WHERE ID_category = @CategoryId";
@@ -35,7 +42,7 @@ public class CategoryRepository
 
     public void AddCategory(Category category)
     {
-        using var connection = new MySqlConnection(_connectionString);
+        using var connection = CreateConnection();
 
         var sql = @"INSERT INTO category (name, created_at)
         VALUES (@Name, @CreatedAt)";
@@ -45,7 +52,7 @@ public class CategoryRepository
 
     public void DeleteCategory(int categoryId)
     {
-        using var connection = new MySqlConnection(_connectionString);
+        using var connection = CreateConnection();
 
         var sql = "DELETE FROM category WHERE ID_category = @CategoryId";
 

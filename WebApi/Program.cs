@@ -22,7 +22,7 @@ builder.Services.AddTransient<IUserUseCases, UserUseCases>();
 builder.Services.AddTransient<IQuizRepository, QuizRepository>();
 builder.Services.AddTransient<IQuestionRepository, QuestionRepository>();
 builder.Services.AddTransient<IAnswerRepository, AnswerRepository>();
-builder.Services.AddTransient<CategoryRepository>(); 
+builder.Services.AddTransient<ICategoryRepository, CategoryRepository>(); 
 
 builder.Services.AddTransient<IQuizGateway, QuizGateway>();
 builder.Services.AddTransient<IQuizUseCases, QuizUseCases>();
