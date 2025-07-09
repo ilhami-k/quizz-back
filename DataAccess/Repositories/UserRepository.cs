@@ -19,7 +19,7 @@ public class UserRepository(IConfiguration configuration) : IUserRepository
     {
         using var connection = CreateConnection();
         return connection.Query<User>(
-            "SELECT ID_user AS UserId, username AS Username, email, password_hash AS PasswordHash, photo_url AS PhotoURL, is_admin AS IsAdmin, created_date AS CreatedAt, created_quizz AS CreatedQuizzes, taken_quizz AS ParticipatedQuizzes FROM user"
+            "SELECT ID_user AS UserId, username AS Username, email, photo_url AS PhotoURL, is_admin AS IsAdmin, created_date AS CreatedAt, created_quizz AS CreatedQuizzes, taken_quizz AS ParticipatedQuizzes FROM user"
         );
     }
 

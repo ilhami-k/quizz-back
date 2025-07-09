@@ -17,9 +17,9 @@ public static class UserRoutes
 {
     public static void AddUserRoutes(this WebApplication app)
     {
-        app.MapGet("/users", (IUserRepository repo) =>
+        app.MapGet("/users", (IUserUseCases useCases) =>
         {
-            return repo.GetAllUsers();
+            return useCases.GetAllUsers();
         })
         .WithName("GetAllUsers");
 

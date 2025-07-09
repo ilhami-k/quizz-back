@@ -57,6 +57,8 @@ public class UserGateway : IUserGateway
             UserId = user.UserId,
             Username = user.Username,
             Email = user.Email,
+            PhotoURL = user.PhotoURL,
+            IsAdmin = user.IsAdmin,
             CreatedQuizzes = user.CreatedQuizzes,
             ParticipatedQuizzes = user.ParticipatedQuizzes
         });
